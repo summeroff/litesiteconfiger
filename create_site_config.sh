@@ -8,9 +8,8 @@ PHP_INI_DIR='/etc/php5/fpm/pool.d'
 WEB_SERVER_GROUP='nginx'
 NGINX_INIT='/etc/init.d/nginx'
 PHP_FPM_INIT='/etc/init.d/php5-fpm'
-
 WEB_ROOT='/var/www/'
-# -------------- 
+
 SED=`which sed`
 CURRENT_DIR=`dirname $0`
 
@@ -32,8 +31,8 @@ else
 fi
 
 #write some information what can be usefull later to a report file 
-REPORT_FILE=$CURRENT_DIR/Report_$DOMAIN.txt
-echo -e "\n\n==== new site report start ====" >> $REPORT_FILE
+REPORT_FILE=$CURRENT_DIR/reports/report_$DOMAIN.txt
+echo -e "\n==== new site report start ====" >> $REPORT_FILE
 echo "Time " date >> $REPORT_FILE 
 echo "Site domain = $DOMAIN" >> $REPORT_FILE
 
@@ -81,7 +80,7 @@ if [[ -a $FPMCONF ]];
 then
   echo "FPM pool config alredy exists"
 else 
-  cp $CURRENT_DIR/pool.conf.template $FPMCONF
+  cp $CURRENT_DIR/templates/pool.conf.template $FPMCONF
 
   $SED -i "s#@@USER@@#$USERNAME#g" $FPMCONF
   $SED -i "s#@@SOCKET@@#$FPM_SOCK_PATH#g" $FPMCONF
@@ -93,7 +92,7 @@ echo "PHP fpm pool config = $FPMCONF" >> $REPORT_FILE
 #create config for nginx virtual server 
 CONFIG=$NGINX_CONFIG/$DOMAIN.conf
 
-cp $CURRENT_DIR/nginx.vhost.conf.template $CONFIG
+cp $CURRENT_DIR/templates/nginx.vhost.conf.template $CONFIG
 $SED -i "s/@@HOSTNAME@@/$DOMAIN/g" $CONFIG
 $SED -i "s#@@PATH@@#$PUBLIC_HTML_DIR#g" $CONFIG
 $SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $CONFIG
@@ -113,5 +112,5 @@ chown $USERNAME:$USERNAME $HOME_DIR/ -R
 $NGINX_INIT reload
 $PHP_FPM_INIT restart
 
-echo "=== report end ===" >> $REPORT_FILE
+echo -e "=== report end ===\n" >> $REPORT_FILE
 echo -e "\nHosting created for $DOMAIN with PHP support" 
