@@ -1,0 +1,15 @@
+
+  if ($http_user_agent ~* (Baiduspider|webalta|nikto|wkito|pikto|scan|acunetix|morfeus|webcollage|youdao) )
+  {
+    return 401;
+  }
+
+  if ($http_user_agent ~* (HTTrack|clshttp|archiver|loader|email|harvest|extract|grab|miner) )
+  {
+    return 401;
+  }
+  if ($http_user_aget ~* (nmap|nikto|wikto|sf|sqlmap|bsqlbf|w3af|acunetix|havij|appscan) )
+  {
+    return 401;
+  }
+
