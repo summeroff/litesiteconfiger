@@ -1,11 +1,13 @@
 It is a fork of script made by Seb Dangerfield at http://www.sebdangerfield.me.uk/?p=513
 
-Script does
+
+What script does:
 * add linux user to "secure" php-fpm instance from other sites 
 * creates virtual server confing for nginx 
 * creates pool config for php-fpm  
 * creates folders for site, logs and stuff in /var/www/user_name 
 
+Target system: debian wheezy
 
 Usage: 
 To create and deploy configs: 
