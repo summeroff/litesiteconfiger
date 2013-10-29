@@ -2,7 +2,7 @@ server
 {
   listen 80; 
   server_name www.@@HOSTNAME@@;
-  rewrite ^ http://@@HOSTNAME@@$request_uri? permanent; #301 redirect
+  rewrite ^ $scheme://@@HOSTNAME@@$request_uri redirect;
 }
 
 server 
@@ -12,35 +12,41 @@ server
   root "@@PATH@@";
 
   index index.php;
-  client_max_body_size 10m;
 
   access_log @@LOG_PATH@@/access.log;
   error_log  @@LOG_PATH@@/error.log;
 	
   include      generic_useragentban;
 
-  location / 
-  {
-    try_files $uri $uri/ /index.php$uri?$args;
-  }
-	
-  location ~ "^(.+\.php)($|/)" 
-  {
-    fastcgi_split_path_info ^(.+\.php)(.*)$;
- 
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    fastcgi_param SCRIPT_NAME $fastcgi_script_name;
-    fastcgi_param PATH_INFO $fastcgi_path_info;
-    fastcgi_param SERVER_NAME $host;
-		
-    if ($uri !~ "^/uploads/") 
-    {
-      fastcgi_pass   unix:@@SOCKET@@;
-    }
 
-    include        fastcgi_params;
+  location / {
+    try_files $uri $uri/ /index.php?$args;
+  }
+
+  #wordpress specific
+  rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+
+  #wordpress specific defence agains start php in upload dir 
+  location ~* /(?:uploads|files)/.*\.php$ {
+    deny all;
+  }
+
+  location ~ \.php$ {
+    # Zero-day exploit defense.
+    # http://forum.nginx.org/read.php?2,88845,page=3
+    try_files $uri =404;
+
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    #NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+
+    include fastcgi_params;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    #fastcgi_intercept_errors on;
+
+    fastcgi_pass   unix:@@SOCKET@@;
+
   }
 
   include      generic_locations;
-
 }

@@ -12,11 +12,6 @@
     access_log off;
   }
 
-  location ~* \.(html|htm)$
-  {
-    expires 30m;
-  }
-
   location ~* /\.(ht|git|svn)
   {
     deny  all;
