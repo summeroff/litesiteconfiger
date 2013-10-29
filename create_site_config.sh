@@ -51,7 +51,7 @@ if id -u $USERNAME;
 then
   echo "User alredy exists"
 else
-  adduser --disabled-password --gecos "" --home $HOME_DIR --shell /usr/sbin/nologin $USERNAME
+  adduser --disabled-password --gecos "" --no-create-home --shell /usr/sbin/nologin $USERNAME
   usermod -a -G $USERNAME $WEB_SERVER_GROUP
 fi
 
@@ -105,6 +105,7 @@ echo "Site nginx config = $CONFIG" >> $REPORT_FILE
 
 # set file perms and create required dir
 mkdir -p $PUBLIC_HTML_DIR
+cp $CURRENT_DIR/templates/index.php.template $PUBLIC_HTML_DIR/index.php
 chmod 750 $PUBLIC_HTML_DIR
 chown $USERNAME:$USERNAME $HOME_DIR/ -R
 

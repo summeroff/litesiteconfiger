@@ -34,6 +34,10 @@ fi
 USERNAME=$2
 HOME_DIR=$WEB_ROOT$USERNAME
 
+if [ -z $1 ]; then 
+  echo "no username given"
+  exit 1
+fi
 
 $NGINX_INIT stop 
 $PHP_FPM_INIT stop
