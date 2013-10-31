@@ -13,12 +13,20 @@ WEB_ROOT='/var/www/'
 SED=`which sed`
 CURRENT_DIR=`dirname $0`
 
+# check script arguments 
 if [ -z $1 ]; 
 then
   echo "No domain name given"
   exit 1
 fi
 DOMAIN=$1
+
+if [ -z $2 ];
+then 
+  echo "No username given"
+  exit 1
+fi 
+USERNAME=$2
 
 # check the domain is valid!
 PATTERN="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$";
@@ -30,88 +38,40 @@ else
   exit 1 
 fi
 
-#write some information what can be usefull later to a report file 
-REPORT_FILE=$CURRENT_DIR/reports/report_$DOMAIN.txt
-echo -e "\n==== new site report start ====" >> $REPORT_FILE
-echo "Time " date >> $REPORT_FILE 
-echo "Site domain = $DOMAIN" >> $REPORT_FILE
+SITE_CONF_DIR=$CURRENT_DIR/$DOMAIN/
+DEPLOY_SCRIPT=$SITE_CONF_DIR/deploy.sh
 
-# Create a new user!
-if [ -z $2 ];
-then 
-  echo "No username given"
-  exit 1
-fi 
-USERNAME=$2
 HOME_DIR=$WEB_ROOT$USERNAME
-echo "Site system user = $USERNAME" >> $REPORT_FILE
-
-#create user if it is not exist yet 
-if id -u $USERNAME; 
-then
-  echo "User alredy exists"
-else
-  adduser --disabled-password --gecos "" --no-create-home --shell /usr/sbin/nologin $USERNAME
-  usermod -a -G $USERNAME $WEB_SERVER_GROUP
-fi
-
-#create home dir for site hosting and dir structure in it
 PUBLIC_HTML_DIR=$HOME_DIR/$DOMAIN/
 LOG_DIR=$HOME_DIR/_logs
 FPM_SOCK_PATH=$HOME_DIR/_run/fpm.sock
-if [[ -d $HOME_DIR ]]; 
-then 
-  echo "home dir alredy exists"
+
+#prepare new site dir 
+if [[ -d $SITE_CONF_DIR ]]; then
+  rm -Rf $SITE_CONF_DIR
 else 
-  mkdir -p $HOME_DIR
-  chmod 750 $HOME_DIR -R
-  mkdir -p $HOME_DIR/_sessions
-  mkdir -p $LOG_DIR 
-  mkdir -p $HOME_DIR/_run
-  chmod 700 $HOME_DIR/_sessions
-  chmod 770 $LOG_DIR
-  chmod 770 $HOME_DIR/_run
-fi
-echo "Site content path = $HOME_DIR/$DOMAIN/" >> $REPORT_FILE
+  mkdir -p $SITE_CONF_DIR
+fi  
+
+#prepare deploy script
+cp  $CURRENT_DIR/templates/deploy_script_template.sh $DEPLOY_SCRIPT
+$SED -i "s#@@USERNAME@@#$USERNAME#g" $DEPLOY_SCRIPT
+$SED -i "s#@@DOMAIN@@#$DOMAIN#g" $DEPLOY_SCRIPT
+chmod 775 $DEPLOY_SCRIPT
 
 #create php pfp pool for user
-FPMCONF=$PHP_INI_DIR/$USERNAME.pool.conf
-if [[ -a $FPMCONF ]]; 
-then
-  echo "FPM pool config alredy exists"
-else 
-  cp $CURRENT_DIR/templates/pool.conf.template $FPMCONF
-
-  $SED -i "s#@@USER@@#$USERNAME#g" $FPMCONF
-  $SED -i "s#@@SOCKET@@#$FPM_SOCK_PATH#g" $FPMCONF
-  $SED -i "s#@@HOME_DIR@@#$HOME_DIR#g" $FPMCONF
-  $SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $FPMCONF
-fi
-echo "PHP fpm pool config = $FPMCONF" >> $REPORT_FILE
+cp $CURRENT_DIR/templates/pool.conf.template $SITE_CONF_DIR/pool.conf
+$SED -i "s#@@USER@@#$USERNAME#g" $SITE_CONF_DIR/pool.conf
+$SED -i "s#@@SOCKET@@#$FPM_SOCK_PATH#g" $SITE_CONF_DIR/pool.conf
+$SED -i "s#@@HOME_DIR@@#$HOME_DIR#g" $SITE_CONF_DIR/pool.conf
+$SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $SITE_CONF_DIR/pool.conf
 
 #create config for nginx virtual server 
-CONFIG=$NGINX_CONFIG/$DOMAIN.conf
+cp $CURRENT_DIR/templates/nginx.vhost.conf.template $SITE_CONF_DIR/nginx.vhost.conf
+$SED -i "s#@@HOSTNAME@@#$DOMAIN#g" $SITE_CONF_DIR/nginx.vhost.conf
+$SED -i "s#@@PATH@@#$PUBLIC_HTML_DIR#g" $SITE_CONF_DIR/nginx.vhost.conf
+$SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $SITE_CONF_DIR/nginx.vhost.conf
+$SED -i "s#@@SOCKET@@#$FPM_SOCK_PATH#g" $SITE_CONF_DIR/nginx.vhost.conf
 
-cp $CURRENT_DIR/templates/nginx.vhost.conf.template $CONFIG
-$SED -i "s/@@HOSTNAME@@/$DOMAIN/g" $CONFIG
-$SED -i "s#@@PATH@@#$PUBLIC_HTML_DIR#g" $CONFIG
-$SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $CONFIG
-$SED -i "s#@@SOCKET@@#$FPM_SOCK_PATH#g" $CONFIG
-
-ln -s $CONFIG $NGINX_SITES_ENABLED/$DOMAIN.conf
-chmod 600 $CONFIG
-
-echo "Site nginx config = $CONFIG" >> $REPORT_FILE
-
-# set file perms and create required dir
-mkdir -p $PUBLIC_HTML_DIR
-cp $CURRENT_DIR/templates/index.php.template $PUBLIC_HTML_DIR/index.php
-chmod 750 $PUBLIC_HTML_DIR
-chown $USERNAME:$USERNAME $HOME_DIR/ -R
-
-
-$NGINX_INIT reload
-$PHP_FPM_INIT restart
-
-echo -e "=== report end ===\n" >> $REPORT_FILE
-echo -e "\nHosting created for $DOMAIN with PHP support" 
+echo -e "\nSite config created for $DOMAIN" 
+echo -e "\nPlease go to dir ./$DOMAIN/ to check configs and run deploy script $DEPLOY_SCRIPT" 
