@@ -5,6 +5,7 @@ PHP_INI_DIR='/etc/php5/fpm/pool.d'
 WEB_SERVER_GROUP='nginx'
 NGINX_INIT='/etc/init.d/nginx'
 PHP_FPM_INIT='/etc/init.d/php5-fpm'
+VSFTPD_INIT='/etc/init.d/vsftpd'
 WEB_ROOT='/var/www/'
 
 DOMAIN='@@DOMAIN@@'
@@ -21,8 +22,9 @@ if id -u $USERNAME;
 then
   echo "User already exists"
 else
-  adduser --disabled-password --gecos "" --no-create-home --shell /usr/sbin/nologin $USERNAME
+  adduser --disabled-password --gecos "" --home $HOME_DIR --no-create-home --shell /usr/sbin/nologin $USERNAME
   usermod -a -G $USERNAME $WEB_SERVER_GROUP
+  echo "$USERNAME" >> /etc/vsftpd.chroot_list 
 fi
 
 if [[ -a $FPMCONF ]]; 
@@ -88,4 +90,5 @@ echo -e "=== report end ===\n" >> $REPORT_FILE
 
 $NGINX_INIT reload
 $PHP_FPM_INIT restart
+$VSFTPD_INIT restart
 

@@ -58,6 +58,7 @@ LOGROTATECONF=/etc/logrotate.d/sites.$USERNAME
 
 rm -Rf $LOGROTATECONF
 
+#TODO remove vsftpd chroot user
 
 #TODO check for file before remove 
 CONFIG=$NGINX_CONFIG/$DOMAIN.conf
