@@ -70,6 +70,10 @@ cp ../templates/index.php.template $PUBLIC_HTML_DIR/index.php
 chmod 750 $PUBLIC_HTML_DIR
 chown $USERNAME:$USERNAME $HOME_DIR/ -R
 
+#copy some inludes for nginx 
+cp -n ../templates/generic_locations /etc/nginx/
+cp -n ../templates/generic_useragentban /etc/nginx/
+
 #write some information what can be usefull later to a report file 
 REPORT_FILE=./report_$DOMAIN.txt
 echo -e "\n==== site report start ====" >> $REPORT_FILE
