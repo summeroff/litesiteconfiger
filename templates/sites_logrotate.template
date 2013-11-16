@@ -1,0 +1,12 @@
+@@LOG_PATH@@/*.log {
+  daily
+  missingok
+  notifempty
+  rotate 5
+  compress
+  create 0660 @@USER@@ @@USER@@
+  sharedscripts
+  postrotate
+           [ -s /run/nginx.pid ] && kill -USR1 `cat /run/nginx.pid`
+  endscript
+}

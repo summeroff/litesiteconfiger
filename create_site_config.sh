@@ -73,5 +73,10 @@ $SED -i "s#@@PATH@@#$PUBLIC_HTML_DIR#g" $SITE_CONF_DIR/nginx.vhost.conf
 $SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $SITE_CONF_DIR/nginx.vhost.conf
 $SED -i "s#@@SOCKET@@#$FPM_SOCK_PATH#g" $SITE_CONF_DIR/nginx.vhost.conf
 
+#create logrotate configs
+cp $CURRENT_DIR/templates/sites_logrotate.template $SITE_CONF_DIR/sites.$USERNAME
+$SED -i "s#@@LOG_PATH@@#$LOG_DIR#g" $SITE_CONF_DIR/sites.$USERNAME
+$SED -i "s#@@USER@@#$USERNAME#g" $SITE_CONF_DIR/sites.$USERNAME
+
 echo -e "\nSite config created for $DOMAIN" 
 echo -e "\nPlease go to dir ./$DOMAIN/ to check configs and run deploy script $DEPLOY_SCRIPT" 

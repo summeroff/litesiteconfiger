@@ -32,7 +32,20 @@ else
   cp ./pool.conf $FPMCONF
 fi 
 
-cp ./nginx.vhost.conf $NGINXCONF
+LOGROTATECONF=/etc/logrotate.d/sites.$USERNAME 
+if [[ -a $LOGROTATECONF  ]]
+then
+  echo "this user already have logrotate installed"
+else
+  cp sites.$USERNAME $LOGROTATECONF
+fi
+
+if [[ -a $NGINXCONF ]]
+then
+  echo "this domain already has ngins config"
+else 
+  cp ./nginx.vhost.conf $NGINXCONF
+fi
 ln -s $NGINXCONF $NGINX_SITES_ENABLED/$DOMAIN.conf
 chmod 600 $NGINXCONF
 

@@ -13,8 +13,8 @@ server
 
   index index.php;
 
-  access_log @@LOG_PATH@@/access.log;
-  error_log  @@LOG_PATH@@/error.log;
+  access_log @@LOG_PATH@@/access@@HOSTNAME@@.log;
+  error_log  @@LOG_PATH@@/error@@HOSTNAME@@.log;
 	
   include      generic_useragentban;
 

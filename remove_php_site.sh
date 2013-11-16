@@ -53,6 +53,12 @@ FPMCONF="$PHP_INI_DIR/$USERNAME.pool.conf"
 
 rm -Rf $FPMCONF
 
+#TODO check logrote to remove
+LOGROTATECONF=/etc/logrotate.d/sites.$USERNAME
+
+rm -Rf $LOGROTATECONF
+
+
 #TODO check for file before remove 
 CONFIG=$NGINX_CONFIG/$DOMAIN.conf
 rm -Rf $CONFIG
