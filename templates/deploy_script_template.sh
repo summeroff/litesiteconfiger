@@ -24,7 +24,9 @@ then
 else
   adduser --disabled-password --gecos "" --home $HOME_DIR --no-create-home --shell /usr/sbin/nologin $USERNAME
   usermod -a -G $USERNAME $WEB_SERVER_GROUP
+
   echo "$USERNAME" >> /etc/vsftpd.chroot_list 
+  echo "Do not forget to set password for user $USERNAME if you want to use ftp"
 fi
 
 if [[ -a $FPMCONF ]]; 
@@ -82,10 +84,16 @@ echo -e "\n==== site report start ====" >> $REPORT_FILE
 echo "Deployed: " $(date) >> $REPORT_FILE 
 echo "Site domain = $DOMAIN" >> $REPORT_FILE
 echo "Site system user = $USERNAME" >> $REPORT_FILE
-
 echo "Site content path = $PUBLIC_HTML_DIR" >> $REPORT_FILE
 echo "PHP fpm pool config = $FPMCONF" >> $REPORT_FILE
 echo "Site nginx config = $NGINXCONF" >> $REPORT_FILE
+
+echo -e "=== useful commands ===\n" >> $REPORT_FILE
+echo "Set user password = #passwd $USERNAME" >> $REPORT_FILE
+echo "Connect by ftps = #lftp -u $USERNAME -e 'set ftp:ssl-force true' ip.ip.ip.ip" >> $REPORT_FILE
+echo "Backup site files = #tar -zcf $HOME_DIR/$DOMAIN.tar.gz $PUBLIC_HTML_DIR" >> $REPORT_FILE
+echo "Fix ownership = #chown -R $USERNAME:$USERNAME $HOME_DIR/" >> $REPORT_FILE
+
 echo -e "=== report end ===\n" >> $REPORT_FILE
 
 $NGINX_INIT reload
