@@ -5,6 +5,8 @@ What script does:
 * creates pool config for php-fpm  
 * creates folders for site, logs and stuff in /var/www/user_name 
 * add linux user to "secure" php-fpm instance from other sites 
+* add user to vsftpd list so it can has sftp access to /var/www/user_name 
+* add config for logrotate 
 
 Target system: debian wheezy
 
