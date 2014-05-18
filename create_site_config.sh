@@ -26,7 +26,7 @@ then
   echo "No username given"
   exit 1
 fi 
-USERNAME=$2
+USERNAME="$(echo $2 | tr '[A-Z]' '[a-z]')"
 
 # check the domain is valid!
 PATTERN="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$";
