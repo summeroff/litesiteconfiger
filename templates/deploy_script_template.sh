@@ -63,9 +63,11 @@ else
   mkdir -p $HOME_DIR/_sessions
   mkdir -p $HOME_DIR/_logs
   mkdir -p $HOME_DIR/_run
+  mkdir -p $HOME_DIR/_backup
   chmod 700 $HOME_DIR/_sessions
   chmod 770 $HOME_DIR/_logs
   chmod 770 $HOME_DIR/_run
+  chmod 770 $HOME_DIR/_backup
 fi
 
 # set file perms and create required dir
@@ -77,6 +79,13 @@ chown $USERNAME:$USERNAME $HOME_DIR/ -R
 #copy some inludes for nginx 
 cp -n ../templates/generic_locations /etc/nginx/
 cp -n ../templates/generic_useragentban /etc/nginx/
+
+#add  to backup script 
+BACKUP_CRON_SCRIPT='/etc/cron.daily/sites_backup' 
+echo "\ntar -cvzf $HOME_DIR/_backup/$DOMAIN-"'$(date +"%Y-%m-%d")'".tar.gz $PUBLIC_HTML_DIR" >> $BACKUP_CRON_SCRIPT
+echo "#mysqldump -u user --password=sqlpassword databases > $HOME_DIR/_backup/$DOMAIN-db-"'$(date +"%Y-%m-%d")'".sql" >> $BACKUP_CRON_SCRIPT
+echo "find $HOME_DIR/_backup/* -mtime +7 -exec rm -v {} \;" >> $BACKUP_CRON_SCRIPT
+echo "chown -R $USERNAME:$USERNAME $HOME_DIR/_backup/" >> $BACKUP_CRON_SCRIPT
 
 #write some information what can be usefull later to a report file 
 REPORT_FILE=./report_$DOMAIN.txt
@@ -91,9 +100,9 @@ echo "Site nginx config = $NGINXCONF" >> $REPORT_FILE
 echo -e "=== useful commands ===\n" >> $REPORT_FILE
 echo "Set user password = #passwd $USERNAME" >> $REPORT_FILE
 echo "Connect by ftps = #lftp -u $USERNAME -e 'set ftp:ssl-force true' ip.ip.ip.ip" >> $REPORT_FILE
-echo "Backup site files = #tar -zcf $HOME_DIR/$DOMAIN.tar.gz $PUBLIC_HTML_DIR" >> $REPORT_FILE
-echo "Fix ownership = #chown -R $USERNAME:$USERNAME $HOME_DIR/" >> $REPORT_FILE
-
+echo "Fix ownership" >> $REPORT_FILE
+echo "chown -R $USERNAME:$USERNAME $HOME_DIR/" >> $REPORT_FILE
+echo -e "=== backup commands ===\n" >> $REPORT_FILE
 echo -e "=== report end ===\n" >> $REPORT_FILE
 
 $NGINX_INIT reload
