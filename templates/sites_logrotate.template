@@ -1,4 +1,5 @@
 @@LOG_PATH@@/*.log {
+  su @@USER@@ @@USER@@
   daily
   missingok
   notifempty
