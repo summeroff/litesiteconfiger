@@ -82,7 +82,8 @@ cp -n ../templates/generic_useragentban /etc/nginx/
 
 #add  to backup script 
 BACKUP_CRON_SCRIPT='/etc/cron.daily/sites_backup' 
-echo "\ntar -cvzf $HOME_DIR/_backup/$DOMAIN-"'$(date +"%Y-%m-%d")'".tar.gz $PUBLIC_HTML_DIR" >> $BACKUP_CRON_SCRIPT
+echo " " >> $BACKUP_CRON_SCRIPT
+echo "tar -cvzf $HOME_DIR/_backup/$DOMAIN-"'$(date +"%Y-%m-%d")'".tar.gz $PUBLIC_HTML_DIR" >> $BACKUP_CRON_SCRIPT
 echo "#mysqldump -u user --password=sqlpassword databases > $HOME_DIR/_backup/$DOMAIN-db-"'$(date +"%Y-%m-%d")'".sql" >> $BACKUP_CRON_SCRIPT
 echo "find $HOME_DIR/_backup/* -mtime +7 -exec rm -v {} \;" >> $BACKUP_CRON_SCRIPT
 echo "chown -R $USERNAME:$USERNAME $HOME_DIR/_backup/" >> $BACKUP_CRON_SCRIPT
